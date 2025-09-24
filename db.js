@@ -1,6 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
-const { sql } = require("@vercel/postgres");
-
+//const { sql } = require("@vercel/postgres");
+const { sql } = require("@neondatabase/serverless");
 const isProd = process.env.VERCEL === "1"; // Vercel setea esta variable
 
 let db;

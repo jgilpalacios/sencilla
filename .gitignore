@@ -1,3 +1,4 @@
 node_modules
 package-lock.json
 contacts.db
+.env.local
