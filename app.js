@@ -1,9 +1,14 @@
 const express = require("express");
 const session = require("express-session");
-const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const path = require("path");
 const db = require("./db");
+const bcrypt = require("bcrypt");
+
+// Cargar variables de entorno local
+if (!process.env.VERCEL) {
+  require("dotenv").config({ path: ".env.local" });
+}
 
 const app = express();
 
@@ -17,22 +22,18 @@ app.use(
   })
 );
 
-// Inicializar tablas
-db.createTablesAndDefaultUser(bcrypt);
+// Inicializar tablas y usuario admin
+db.createTablesAndDefaultUser();
 
-// Middleware de autenticación
+// Middleware autenticación
 function requireLogin(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect("/login");
-  }
+  if (!req.session.user) return res.redirect("/login");
   next();
 }
 
 // Rutas
 app.get("/", (req, res) => {
-  if (!req.session.user) {
-    return res.redirect("/login");
-  }
+  if (!req.session.user) return res.redirect("/login");
   res.redirect("/contacts");
 });
 
@@ -46,10 +47,9 @@ app.post("/login", async (req, res) => {
   try {
     const user = await db.getUser(username);
     if (!user) return res.send("Usuario no encontrado");
-
     if (bcrypt.compareSync(password, user.password)) {
       req.session.user = user;
-      return res.redirect("/contacts");
+      res.redirect("/contacts");
     } else {
       res.send("Contraseña incorrecta");
     }
@@ -60,9 +60,7 @@ app.post("/login", async (req, res) => {
 
 // Logout
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
+  req.session.destroy(() => res.redirect("/login"));
 });
 
 // Listar contactos
@@ -138,10 +136,10 @@ app.get("/contacts/delete/:id", requireLogin, async (req, res) => {
   }
 });
 
-// Exportar app (para Vercel)
+// Exportar app para Vercel
 module.exports = app;
 
-// Para desarrollo local: levantar server
+// Para desarrollo local: levantar servidor
 if (process.env.NODE_ENV !== "production") {
   app.listen(3000, () => {
     console.log("Servidor local en http://localhost:3000");
