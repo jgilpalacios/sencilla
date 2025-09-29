@@ -15,8 +15,14 @@ console.log('ENv:', JSON.stringify(process.env.DATABASE_URL, null, 2));
 let sequelize;
 
 if (useNeon) {
+  let connectionString = process.env.DATABASE_URL;
+
+  // 👇 Fix: Sequelize necesita postgres://
+  if (connectionString && connectionString.startsWith('postgresql://')) {
+    connectionString = connectionString.replace('postgresql://', 'postgres://');
+  }
   //sequelize = new Sequelize(process.env.AGENDA_URL, {
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
+  sequelize = new Sequelize(connectionString, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
