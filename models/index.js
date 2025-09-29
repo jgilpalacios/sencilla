@@ -16,7 +16,7 @@ let sequelize;
 
 if (useNeon) {
   //sequelize = new Sequelize(process.env.AGENDA_URL, {
-  sequelize = new Sequelize(process.env.POSTGRES_URL, {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
