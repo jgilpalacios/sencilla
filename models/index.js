@@ -64,7 +64,8 @@ const Contact = sequelize.define('Contact', {
 
 // Inicializar tablas y usuario por defecto
 const createTablesAndDefaultUser = async () => {
-  await sequelize.sync({ force: false });
+  //await sequelize.sync({ force: false });
+  await sequelize.sync({ force: true});
   //await sequelize.sync({ alter: true });
 
   const hashedPassword = bcrypt.hashSync('1234', 10);
