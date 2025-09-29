@@ -10,7 +10,7 @@ if (!process.env.VERCEL) {
 // Detecta entorno de producción
 const useNeon = process.env.VERCEL === '1' || process.env.USE_NEON === 'true';
 
-console.log('USANDO NEON', useNeon, process.env.USE_NEON);
+console.log('USANDO NEON', useNeon, process.env.USE_NEON,'\n',process.env.AGENDA_URL);
 
 let sequelize;
 
