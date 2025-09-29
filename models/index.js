@@ -7,6 +7,15 @@ if (!process.env.VERCEL) {
   require('dotenv').config({ path: '.env.local' });
 }
 
+// Verifica si el paquete 'pg' está instalado
+try {
+  require.resolve('pg');
+  console.log('✅ pg está disponible');
+} catch (e) {
+  console.error('❌ pg NO está disponible');
+}
+
+
 // Detecta entorno de producción
 const useNeon = process.env.VERCEL === '1' || process.env.USE_NEON === 'true';
 
