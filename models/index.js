@@ -11,7 +11,7 @@ if (!process.env.VERCEL) {
 const useNeon = process.env.VERCEL === '1' || process.env.USE_NEON === 'true';
 
 console.log('USANDO NEON', useNeon, process.env.USE_NEON,'\n', process.env.AGENDA_URL);
-console.log('ENv:', JSON.stringify(process.env, null, 2));
+console.log('ENv:', JSON.stringify(process.env.DATABASE_URL, null, 2));
 let sequelize;
 
 if (useNeon) {
@@ -77,6 +77,11 @@ const createTablesAndDefaultUser = async () => {
     defaults: { password: hashedPassword }
   });
 }
+
+sequelize.authenticate()
+  .then(() => console.log('✅ Conectado a la base de datos'))
+  .catch(err => console.error('❌ Error de conexión:', err));
+
 
 module.exports = {
     sequelize,
