@@ -1,0 +1,11 @@
+<a href="/logout">Cerrar sesión</a> |
+<a href="/<%= elementName %>/new">Nuevo <%= elementNombre %></a>
+<ul>
+    <% rows.forEach((c)=> { %>
+        <li>
+            <% camposNames.forEach((cp)=>{ %> - <%= c[cp] %> <% }) %>
+                    <a href="/<%= elementName %>/edit/<%= c.id %>">Editar</a> 
+                    <a onclick="irAsConfirma('/<%= elementName %>/delete/<%= c.id %>')" href="#">Eliminar</a> 
+        </li>
+        <% }) %>
+</ul>

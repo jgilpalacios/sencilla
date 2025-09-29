@@ -1,0 +1,8 @@
+<%
+let esNew = typeof contact === 'undefined';
+%>
+<form method="POST" action="<%= esNew ? '/contacts/new' : '/contacts/edit/' + contact.id %>">
+  <input type="text" name="name" placeholder="Nombre" value="<%= esNew ? '' : contact.name %>" required>
+  <input type="text" name="phone" placeholder="Teléfono" value="<%= esNew ? '' : contact.phone %>" required>
+  <button type="submit">Guardar</button>
+</form>

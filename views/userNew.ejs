@@ -1,0 +1,9 @@
+<%
+let esNew = typeof user === 'undefined';
+%>
+<form id="userForm" method="POST" action="<%= esNew ? '/users/new' : '/users/edit/' + user.id %>">
+  <input type="text" name="username" placeholder="Nombre de usuario" value="<%= esNew ? '' : user.username %>" required>
+  <input type="password" name="password" id="password" placeholder="Contraseña" value="" required>
+  <input type="password" name="repetirPassword" id="repetirPassword" placeholder="Repetir Contraseña" value="" required>
+  <button type="button" onclick="if (document.getElementById('password').value === document.getElementById('repetirPassword').value) { document.getElementById('userForm').submit(); } else { alert('Las contraseñas no coinciden'); }">Guardar</button>
+</form>

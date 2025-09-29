@@ -2,15 +2,27 @@ const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
-const db = require("./db");
+//const db = require("./db");
 const bcrypt = require("bcrypt");
+const { sequelize, User, Contact,createTablesAndDefaultUser } = require('./models');
 
-// Cargar variables de entorno local
-if (!process.env.VERCEL) {
-  require("dotenv").config({ path: ".env.local" });
-}
 
 const app = express();
+
+// Configuración de EJS como motor de vistas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+const expressLayouts = require('express-ejs-layouts');
+const { title } = require("process");
+
+//app.use(expressLayouts);
+//app.set('layout', 'layout'); // archivo layout.ejs
+app.set('view engine', 'ejs');
+app.use(expressLayouts); // Habilitar el uso de layouts
+app.use(express.static('public')); // Archivos estáticos en la carpeta 'public'
+
+
+
 
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,7 +35,14 @@ app.use(
 );
 
 // Inicializar tablas y usuario admin
-db.createTablesAndDefaultUser();
+//db.createTablesAndDefaultUser();
+createTablesAndDefaultUser();
+
+// Middleware para que la sesión esté disponible en todas las vistas
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
 
 // Middleware autenticación
 function requireLogin(req, res, next) {
@@ -39,22 +58,27 @@ app.get("/", (req, res) => {
 
 // Login
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views/login.html"));
+  res.render("login",{ title: 'Login' });
 });
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await db.getUser(username);
-    if (!user) return res.send("Usuario no encontrado");
+    //const user = await db.getUser(username);
+    const users = await User.findAll({ where: { username } });
+    if (!users[0]) return res.render("error", { message: "Usuario no encontrado", title: 'Error' });
+    const user = users[0];
+    console.log('USER',user.username+'\n', user.password+'\n', bcrypt.hashSync(password, 10));
     if (bcrypt.compareSync(password, user.password)) {
       req.session.user = user;
       res.redirect("/contacts");
     } else {
-      res.send("Contraseña incorrecta");
+      res.render("error", { message: "Contraseña incorrecta: "+err.message, title: 'Error' });
+      //res.send("Contraseña incorrecta");
     }
   } catch (err) {
-    res.send("Error en DB: " + err.message);
+    res.render("error", { message: "Error en DB:"+err.message, title: 'Error' });
+    //res.send("Error en DB: " + err.message);
   }
 });
 
@@ -63,77 +87,18 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
-// Listar contactos
-app.get("/contacts", requireLogin, async (req, res) => {
-  try {
-    const rows = await db.getContacts();
-    let html = `<h1>Contactos</h1>
-      <a href="/logout">Cerrar sesión</a> |
-      <a href="/contacts/new">Nuevo contacto</a>
-      <ul>`;
-    rows.forEach((c) => {
-      html += `<li>${c.name} - ${c.phone} 
-        <a href="/contacts/edit/${c.id}">Editar</a> 
-        <a href="/contacts/delete/${c.id}">Eliminar</a></li>`;
-    });
-    html += "</ul>";
-    res.send(html);
-  } catch (err) {
-    res.send("Error en DB: " + err.message);
-  }
-});
+// Rutas
+const contactRoutes = require('./routes/contact');
+const userRoutes = require('./routes/user');
+app.use('/contacts', requireLogin, contactRoutes);
+app.use('/users', requireLogin, userRoutes);
 
-// Nuevo contacto
-app.get("/contacts/new", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "views/new.html"));
-});
 
-app.post("/contacts/new", requireLogin, async (req, res) => {
-  const { name, phone } = req.body;
-  try {
-    await db.insertContact(name, phone);
-    res.redirect("/contacts");
-  } catch (err) {
-    res.send("Error guardando contacto: " + err.message);
-  }
-});
 
-// Editar contacto
-app.get("/contacts/edit/:id", requireLogin, async (req, res) => {
-  try {
-    const contact = await db.getContact(req.params.id);
-    if (!contact) return res.send("Contacto no encontrado");
-    res.send(`
-      <h1>Editar contacto</h1>
-      <form method="POST" action="/contacts/edit/${contact.id}">
-        <input type="text" name="name" value="${contact.name}" required>
-        <input type="text" name="phone" value="${contact.phone}" required>
-        <button type="submit">Guardar</button>
-      </form>
-    `);
-  } catch (err) {
-    res.send("Error obteniendo contacto: " + err.message);
-  }
-});
-
-app.post("/contacts/edit/:id", requireLogin, async (req, res) => {
-  const { name, phone } = req.body;
-  try {
-    await db.updateContact(req.params.id, name, phone);
-    res.redirect("/contacts");
-  } catch (err) {
-    res.send("Error actualizando: " + err.message);
-  }
-});
-
-// Eliminar contacto
-app.get("/contacts/delete/:id", requireLogin, async (req, res) => {
-  try {
-    await db.deleteContact(req.params.id);
-    res.redirect("/contacts");
-  } catch (err) {
-    res.send("Error eliminando: " + err.message);
-  }
+// Middleware de gestión de errores (después de todas las rutas)
+app.use((req, res, next) => {
+  //res.status(404).sendFile(__dirname + '/public/404.html'); // Asegúrate de tener un archivo 404.html
+  res.status(404).render("error", { message: "ERROR 404Página no encontrada" });
 });
 
 // Exportar app para Vercel

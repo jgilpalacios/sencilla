@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= typeof title !=='undefined' ? title : 'Clave Manager' %>
+  </title>
+</head>
+<style>
+  .error {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    color: #da1818;
+  }
+  .signed {
+    background-color: lightgray;
+    text-decoration: antiquewhite;
+  }
+</style>
+<script>
+  const irAsConfirma = (url) => {
+    if (confirm("¿Estás seguro?")) {
+      window.location.href = url;
+    }
+  }
+</script>
+<body>
+    <h1 <%- typeof title ==='undefined' || title===`Error` ? `class="error"` : `` %>><%= typeof title !=='undefined' ? title : 'Clave Manager' %></h1>
+    <nav>
+      <a href="/">Inicio</a> |
+      <a href="/users">Usuarios</a> |
+      <!--<a href="/claves/aes">Claves AES</a>-->
+    </nav>
+    <hr />
+  </header>
+
+  <main >
+    <%- body %>
+  </main>
+
+  <footer>
+    <hr />
+    <p>&copy; 2025 Contacts Manager (<%= session && session.user ? session.user.username : '' %>)</p>
+  </footer>
+</body>
+
+</html>
