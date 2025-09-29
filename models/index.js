@@ -15,7 +15,8 @@ console.log('ENv:', JSON.stringify(process.env, null, 2));
 let sequelize;
 
 if (useNeon) {
-  sequelize = new Sequelize(process.env.AGENDA_URL, {
+  //sequelize = new Sequelize(process.env.AGENDA_URL, {
+  sequelize = new Sequelize(process.env.POSTGRES_URL, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
