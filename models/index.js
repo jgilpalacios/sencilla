@@ -21,6 +21,7 @@ if (useNeon) {
   if (connectionString && connectionString.startsWith('postgresql://')) {
     connectionString = connectionString.replace('postgresql://', 'postgres://');
   }
+  console.log('++++Connection String:', connectionString);
   //sequelize = new Sequelize(process.env.AGENDA_URL, {
   sequelize = new Sequelize(connectionString, {
     dialect: 'postgres',
